@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import SurfacePlot from './SurfacePlot';
 import Papa from 'papaparse';
+import '../styles/Components.css';
 
 function VisualizationPage() {
   const [groupedData, setGroupedData] = useState({});
@@ -22,53 +23,80 @@ function VisualizationPage() {
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          const parsedData = results.data
-            .filter(
-              (row) =>
-                row.test_case &&
-                row.conc_ppm &&
-                row.area_m2 &&
-                row.ave_mw_vap &&
-                row.temp_c &&
-                row.elev_m
-            )
-            .map((row, index) => ({
-              id: index + 1,
-              testCase: row.test_case,
-              concPpm: parseFloat(row.conc_ppm),
-              areaM2: parseFloat(row.area_m2),
-              aveMwVap: parseFloat(row.ave_mw_vap),
-              tempC: parseFloat(row.temp_c),
-              elevM: parseFloat(row.elev_m),
-            }));
-
-          // Group data by concPpm
-          const grouped = {};
-          parsedData.forEach((item) => {
-            if (!grouped[item.concPpm]) {
-              grouped[item.concPpm] = [];
-            }
-            grouped[item.concPpm].push(item);
-          });
-
-          setGroupedData(grouped);
-          setIsCsvData(true);
-          setCurrentPage(0); // Reset to first page on new upload
-
-          // Reset the file input's value
-          event.target.value = null;
-        },
-        error: (error) => {
-          console.error('Error parsing CSV:', error);
-          // Reset the file input's value in case of error
-          event.target.value = null;
-        },
-      });
+      parseCsvFile(file);
     }
+  };
+
+  const loadDefaultData = () => {
+    fetch('/data/data.csv')
+      .then((response) => response.text())
+      .then((csvText) => {
+        parseCsvData(csvText);
+      })
+      .catch((error) => {
+        console.error('Error fetching default data:', error);
+      });
+  };
+
+  const parseCsvFile = (file) => {
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        processParsedData(results.data);
+      },
+      error: (error) => {
+        console.error('Error parsing CSV:', error);
+      },
+    });
+  };
+
+  const parseCsvData = (csvText) => {
+    Papa.parse(csvText, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        processParsedData(results.data);
+      },
+      error: (error) => {
+        console.error('Error parsing CSV:', error);
+      },
+    });
+  };
+
+  const processParsedData = (data) => {
+    const parsedData = data
+      .filter(
+        (row) =>
+          row.test_case &&
+          row.conc_ppm &&
+          row.area_m2 &&
+          row.ave_mw_vap &&
+          row.temp_c &&
+          row.elev_m
+      )
+      .map((row, index) => ({
+        id: index + 1,
+        testCase: row.test_case,
+        concPpm: parseFloat(row.conc_ppm),
+        areaM2: parseFloat(row.area_m2),
+        aveMwVap: parseFloat(row.ave_mw_vap),
+        tempC: parseFloat(row.temp_c),
+        elevM: parseFloat(row.elev_m),
+      }));
+
+    // Group data by concPpm
+    const grouped = {};
+    parsedData.forEach((item) => {
+      if (!grouped[item.concPpm]) {
+        grouped[item.concPpm] = [];
+      }
+      grouped[item.concPpm].push(item);
+    });
+
+    setGroupedData(grouped);
+    setIsCsvData(true);
+    setCurrentPage(0); // Reset to first page on new upload
   };
 
   // Plot configurations
@@ -186,40 +214,53 @@ function VisualizationPage() {
   return (
     <div style={{ padding: '20px' }}>
       <h1>Visualization</h1>
-      <div style={{ marginBottom: '20px' }}>
-        <label htmlFor="csvUpload">Upload CSV File:</label>
-        <input
-          type="file"
-          id="csvUpload"
-          accept=".csv"
-          onChange={handleFileUpload}
-          style={{ marginLeft: '10px' }}
-        />
+
+      {/* Controls Container */}
+      <div className="controls-container">
+        {/* File Upload */}
+        <div className="custom-file-input">
+          <input
+            type="file"
+            id="csvUpload"
+            accept=".csv"
+            onChange={handleFileUpload}
+          />
+          <label htmlFor="csvUpload">Upload CSV File</label>
+        </div>
+
+        {/* Load Default Data Button */}
+        <button className="custom-button" onClick={loadDefaultData}>
+          Load Default Data
+        </button>
       </div>
 
+      {/* Status Message */}
       {isCsvData && (
-        <div style={{ marginBottom: '20px', color: 'blue' }}>
+        <div className="status-message success">
           Data is loaded from CSV file.
         </div>
       )}
 
-      {/* Navigation Buttons */}
+      {/* Navigation Controls */}
       {totalPages > 1 && (
-        <div style={{ marginBottom: '20px' }}>
+        <div className="nav-controls">
           <button
+            className="custom-button"
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
             disabled={currentPage === 0}
-            style={{ marginRight: '10px' }}
           >
             Previous
           </button>
           <button
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+            className="custom-button"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
+            }
             disabled={currentPage === totalPages - 1}
           >
             Next
           </button>
-          <span style={{ marginLeft: '20px' }}>
+          <span className="page-info">
             Page {currentPage + 1} of {totalPages}
           </span>
         </div>
@@ -230,7 +271,7 @@ function VisualizationPage() {
         style={{
           overflowX: 'auto',
           overflowY: 'hidden',
-          height: '16px', // Adjust based on scrollbar height
+          height: '16px',
         }}
         ref={topScrollRef}
       >
@@ -268,42 +309,22 @@ function VisualizationPage() {
       </div>
 
       {/* Left Arrow */}
-      { (
-        <div
-          onClick={scrollLeft}
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '10px',
-            transform: 'translateY(-50%)',
-            backgroundColor: 'rgba(255, 255, 255, 0.5)',
-            padding: '10px',
-            cursor: 'pointer',
-            zIndex: 1000,
-          }}
-        >
-          &#9664;
-        </div>
-      )}
+      <div
+        onClick={scrollLeft}
+        className="scroll-arrow left"
+        style={{ display: 'block'}}
+      >
+        &#9664;
+      </div>
 
       {/* Right Arrow */}
-      {(
-        <div
-          onClick={scrollRight}
-          style={{
-            position: 'fixed',
-            top: '50%',
-            right: '10px',
-            transform: 'translateY(-50%)',
-            backgroundColor: 'rgba(255, 255, 255, 0.5)',
-            padding: '10px',
-            cursor: 'pointer',
-            zIndex: 1000,
-          }}
-        >
-          &#9654;
-        </div>
-      )}
+      <div
+        onClick={scrollRight}
+        className="scroll-arrow right"
+        style={{ display: 'block'}}
+      >
+        &#9654;
+      </div>
     </div>
   );
 }

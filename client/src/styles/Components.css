@@ -1,0 +1,148 @@
+/* Components.css */
+
+/* Base button styles */
+.custom-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.25rem;
+  padding: 0.5rem 1rem;
+  height: 2.5rem;
+  background-color: rgb(15, 23, 42); /* slate-900 */
+  color: white;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+
+/* Hover state */
+.custom-button:hover {
+  background-color: rgb(30, 41, 59); /* slate-800 */
+}
+
+/* Focus state */
+.custom-button:focus {
+  outline: 2px solid rgb(148, 163, 184); /* slate-400 */
+  outline-offset: 2px;
+}
+
+/* Active/Pressed state */
+.custom-button:active {
+  background-color: rgb(51, 65, 85); /* slate-700 */
+}
+
+/* Disabled state */
+.custom-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: rgb(71, 85, 105); /* slate-600 */
+}
+
+/* File input styling */
+.custom-file-input {
+  display: block;
+  font-size: 14px;
+  color: rgb(100, 116, 139); /* slate-500 */
+}
+
+.custom-file-input input[type="file"] {
+  display: none;
+}
+
+.custom-file-input label {
+  display: inline-block;
+  margin-right: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  border: 0;
+  font-size: 14px;
+  font-weight: 600;
+  background-color: rgb(243, 244, 246); /* violet-50 equivalent */
+  color: rgb(109, 40, 217); /* violet-700 equivalent */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.custom-file-input label:hover {
+  background-color: rgb(237, 233, 254); /* violet-100 equivalent */
+}
+
+.custom-file-input span {
+  font-size: 14px;
+  color: rgb(75, 85, 99); /* gray-600 */
+}
+
+/* Container styles */
+.controls-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .controls-container {
+    flex-direction: column;
+  }
+  
+  .custom-button {
+    width: 100%;
+  }
+}
+
+/* Status message styles */
+.status-message {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+.status-message.success {
+  color: rgb(37, 99, 235); /* blue-600 */
+}
+
+.status-message.error {
+  color: rgb(239, 68, 68); /* red-500 */
+}
+
+/* Navigation controls */
+.nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-info {
+  font-size: 14px;
+  color: rgb(75, 85, 99); /* gray-600 */
+}
+
+/* Scroll arrows */
+.scroll-arrow {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 10px;
+  cursor: pointer;
+  z-index: 1000;
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+.scroll-arrow:hover {
+  background-color: rgba(255, 255, 255, 0.75);
+}
+
+.scroll-arrow.left {
+  left: 10px;
+}
+
+.scroll-arrow.right {
+  right: 10px;
+}
