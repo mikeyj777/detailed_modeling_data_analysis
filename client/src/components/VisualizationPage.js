@@ -8,8 +8,9 @@ function VisualizationPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const concentrationsPerPage = 4;
 
-  // Reference to the scrollable container
+  // References to the scrollable containers
   const scrollContainerRef = useRef(null);
+  const topScrollRef = useRef(null);
 
   // State for arrow visibility
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -101,6 +102,13 @@ function VisualizationPage() {
     (currentPage + 1) * concentrationsPerPage
   );
 
+  // Constants for column dimensions
+  const columnWidth = 600; // Should match the width in the style
+  const columnMargin = 20; // Should match the marginRight in the style
+
+  // Calculate content width for the top scrollbar
+  const contentWidth = currentConcentrations.length * (columnWidth + columnMargin);
+
   // Scrolling functions
   const scrollLeft = () => {
     scrollContainerRef.current.scrollBy({ left: -600, behavior: 'smooth' });
@@ -110,21 +118,42 @@ function VisualizationPage() {
     scrollContainerRef.current.scrollBy({ left: 600, behavior: 'smooth' });
   };
 
-  // Handle arrow visibility
+  // Handle arrow visibility and synchronize scroll positions
   const handleScroll = () => {
-    const { scrollLeft: sl, scrollWidth, clientWidth } = scrollContainerRef.current;
-    setCanScrollLeft(sl > 0);
-    setCanScrollRight(sl + clientWidth < scrollWidth);
+    const scrollEl = scrollContainerRef.current;
+    const topScrollEl = topScrollRef.current;
+
+    if (scrollEl && topScrollEl) {
+      const { scrollLeft: sl, scrollWidth, clientWidth } = scrollEl;
+      setCanScrollLeft(sl > 0);
+      setCanScrollRight(sl + clientWidth < scrollWidth);
+
+      // Synchronize scroll positions
+      topScrollEl.scrollLeft = sl;
+    }
   };
 
   useEffect(() => {
     const scrollEl = scrollContainerRef.current;
-    if (scrollEl) {
-      scrollEl.addEventListener('scroll', handleScroll);
+    const topScrollEl = topScrollRef.current;
+
+    if (scrollEl && topScrollEl) {
+      const syncScroll = () => {
+        topScrollEl.scrollLeft = scrollEl.scrollLeft;
+        handleScroll();
+      };
+      const syncScrollTop = () => {
+        scrollEl.scrollLeft = topScrollEl.scrollLeft;
+        handleScroll();
+      };
+      scrollEl.addEventListener('scroll', syncScroll);
+      topScrollEl.addEventListener('scroll', syncScrollTop);
+
       handleScroll(); // Initial check
 
       return () => {
-        scrollEl.removeEventListener('scroll', handleScroll);
+        scrollEl.removeEventListener('scroll', syncScroll);
+        topScrollEl.removeEventListener('scroll', syncScrollTop);
       };
     }
   }, [currentConcentrations]);
@@ -171,6 +200,18 @@ function VisualizationPage() {
         </div>
       )}
 
+      {/* Top Scrollbar */}
+      <div
+        style={{
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          height: '16px', // Adjust based on scrollbar height
+        }}
+        ref={topScrollRef}
+      >
+        <div style={{ width: `${contentWidth}px`, height: '1px' }} />
+      </div>
+
       {/* Display plots for current concentrations */}
       <div
         style={{
@@ -181,33 +222,14 @@ function VisualizationPage() {
         }}
         ref={scrollContainerRef}
       >
-        {/* Left Arrow */}
-        {canScrollLeft && (
-          <div
-            onClick={scrollLeft}
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '0',
-              transform: 'translateY(-50%)',
-              backgroundColor: 'rgba(255, 255, 255, 0.5)',
-              padding: '10px',
-              cursor: 'pointer',
-              zIndex: 1,
-            }}
-          >
-            &#9664;
-          </div>
-        )}
-
         {/* Concentration Columns */}
         {currentConcentrations.map((concPpm) => (
           <div
             key={concPpm}
             style={{
               flex: '0 0 auto',
-              width: '600px',
-              marginRight: '20px',
+              width: `${columnWidth}px`,
+              marginRight: `${columnMargin}px`,
             }}
           >
             <h3>Concentration: {concPpm} ppm</h3>
@@ -218,26 +240,45 @@ function VisualizationPage() {
             ))}
           </div>
         ))}
-
-        {/* Right Arrow */}
-        {canScrollRight && (
-          <div
-            onClick={scrollRight}
-            style={{
-              position: 'absolute',
-              top: '50%',
-              right: '0',
-              transform: 'translateY(-50%)',
-              backgroundColor: 'rgba(255, 255, 255, 0.5)',
-              padding: '10px',
-              cursor: 'pointer',
-              zIndex: 1,
-            }}
-          >
-            &#9654;
-          </div>
-        )}
       </div>
+
+      {/* Left Arrow */}
+      {canScrollLeft && (
+        <div
+          onClick={scrollLeft}
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '10px',
+            transform: 'translateY(-50%)',
+            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+            padding: '10px',
+            cursor: 'pointer',
+            zIndex: 1000,
+          }}
+        >
+          &#9664;
+        </div>
+      )}
+
+      {/* Right Arrow */}
+      {canScrollRight && (
+        <div
+          onClick={scrollRight}
+          style={{
+            position: 'fixed',
+            top: '50%',
+            right: '10px',
+            transform: 'translateY(-50%)',
+            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+            padding: '10px',
+            cursor: 'pointer',
+            zIndex: 1000,
+          }}
+        >
+          &#9654;
+        </div>
+      )}
     </div>
   );
 }
