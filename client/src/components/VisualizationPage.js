@@ -16,6 +16,9 @@ function VisualizationPage() {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
+  // Flag to indicate programmatic scrolling
+  const isScrolling = useRef(false);
+
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -111,15 +114,35 @@ function VisualizationPage() {
 
   // Scrolling functions
   const scrollLeft = () => {
-    scrollContainerRef.current.scrollBy({ left: -600, behavior: 'smooth' });
+    if (scrollContainerRef.current && topScrollRef.current) {
+      isScrolling.current = true;
+      scrollContainerRef.current.scrollBy({ left: -600, behavior: 'smooth' });
+      topScrollRef.current.scrollBy({ left: -600, behavior: 'smooth' });
+
+      setTimeout(() => {
+        isScrolling.current = false;
+      }, 500); // Adjust timeout as needed
+    }
   };
 
   const scrollRight = () => {
-    scrollContainerRef.current.scrollBy({ left: 600, behavior: 'smooth' });
+    if (scrollContainerRef.current && topScrollRef.current) {
+      isScrolling.current = true;
+      scrollContainerRef.current.scrollBy({ left: 600, behavior: 'smooth' });
+      topScrollRef.current.scrollBy({ left: 600, behavior: 'smooth' });
+
+      setTimeout(() => {
+        isScrolling.current = false;
+      }, 500); // Adjust timeout as needed
+    }
   };
 
   // Handle arrow visibility and synchronize scroll positions
   const handleScroll = () => {
+    if (isScrolling.current) {
+      return;
+    }
+
     const scrollEl = scrollContainerRef.current;
     const topScrollEl = topScrollRef.current;
 
@@ -139,10 +162,12 @@ function VisualizationPage() {
 
     if (scrollEl && topScrollEl) {
       const syncScroll = () => {
+        if (isScrolling.current) return;
         topScrollEl.scrollLeft = scrollEl.scrollLeft;
         handleScroll();
       };
       const syncScrollTop = () => {
+        if (isScrolling.current) return;
         scrollEl.scrollLeft = topScrollEl.scrollLeft;
         handleScroll();
       };
@@ -243,7 +268,7 @@ function VisualizationPage() {
       </div>
 
       {/* Left Arrow */}
-      {canScrollLeft && (
+      { (
         <div
           onClick={scrollLeft}
           style={{
@@ -262,7 +287,7 @@ function VisualizationPage() {
       )}
 
       {/* Right Arrow */}
-      {canScrollRight && (
+      {(
         <div
           onClick={scrollRight}
           style={{
