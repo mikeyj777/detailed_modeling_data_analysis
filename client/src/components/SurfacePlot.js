@@ -5,25 +5,29 @@ import Modal from './Modal';
 const SurfacePlot = ({ data, xField, yField, xLabel, yLabel }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Extract data
   const xData = data.map((row) => row[xField]);
   const yData = data.map((row) => row[yField]);
   const zData = data.map((row) => row.areaM2); // Using areaM2 as Z-axis
 
+  // Adjust yData if it has constant values
+  const yUniqueValues = [...new Set(yData)];
+  let adjustedYData = yData;
+  if (yUniqueValues.length === 1) {
+    // Introduce slight variations to yData
+    adjustedYData = yData.map((value, index) => value + index * 0.001);
+  }
+
   const plotData = [
     {
       x: xData,
-      y: yData,
+      y: adjustedYData,
       z: zData,
-      mode: 'markers',
       type: 'mesh3d',
-      marker: {
-        size: 5,
-        color: zData,
-        colorscale: 'Viridis',
-        colorbar: { title: 'Area (m²)' },
-      },
+      intensity: zData,
+      colorscale: 'Viridis',
       text: data.map((row) => `Test Case: ${row.testCase}`),
-      hovertemplate: `<b>${xLabel}:</b> %{x}<br><b>${yLabel}:</b> %{y}<br><b>Area:</b> %{z}<br>%{text}<extra></extra>`,
+      hoverinfo: 'x+y+z+text',
     },
   ];
 
@@ -34,15 +38,16 @@ const SurfacePlot = ({ data, xField, yField, xLabel, yLabel }) => {
       zaxis: { title: 'Area (m²)' },
     },
     autosize: true,
-    margin: { l: 0, r: 0, b: 0, t: 50 },
     title: `Area (m²) vs ${xLabel} and ${yLabel}`,
+    margin: { l: 0, r: 0, b: 0, t: 50 },
   };
 
-  const plotStyle = { width: '100%', height: '400px' };
+  // Adjusted plot styles for larger size
+  const plotStyle = { width: '100%', height: '500px' }; // Increased height
   const modalPlotStyle = { width: '100%', height: '80vh' };
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', marginBottom: '30px' }}>
       <button
         onClick={() => setIsModalOpen(true)}
         style={{
