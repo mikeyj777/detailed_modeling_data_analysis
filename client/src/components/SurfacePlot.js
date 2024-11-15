@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import Plot from 'react-plotly.js';
 import Modal from './Modal';
+import '../styles/Components.css'; // Import CSS if not already
 
-const SurfacePlot = ({ data, xField, yField, xLabel, yLabel }) => {
+const SurfacePlot = ({ data, xField, yField, xLabel, yLabel, plotType }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Extract data
@@ -18,29 +19,124 @@ const SurfacePlot = ({ data, xField, yField, xLabel, yLabel }) => {
     adjustedYData = yData.map((value, index) => value + index * 0.001);
   }
 
-  const plotData = [
-    {
-      x: xData,
-      y: adjustedYData,
-      z: zData,
-      type: 'mesh3d',
-      intensity: zData,
-      colorscale: 'Viridis',
-      text: data.map((row) => `Test Case: ${row.testCase}`),
-      hoverinfo: 'x+y+z+text',
-    },
-  ];
+  // Determine plot data based on plotType
+  let plotData = [];
+  let layout = {};
 
-  const layout = {
-    scene: {
-      xaxis: { title: xLabel },
-      yaxis: { title: yLabel },
-      zaxis: { title: 'Area (m²)' },
-    },
-    autosize: true,
-    title: `Area (m²) vs ${xLabel} and ${yLabel}`,
-    margin: { l: 0, r: 0, b: 0, t: 50 },
-  };
+  switch (plotType) {
+    case 'scatter3d':
+      plotData = [
+        {
+          x: xData,
+          y: adjustedYData,
+          z: zData,
+          type: 'scatter3d',
+          mode: 'markers',
+          marker: {
+            size: 3,
+            color: zData,
+            colorscale: 'Viridis',
+          },
+          text: data.map((row) => `Test Case: ${row.testCase}`),
+          hoverinfo: 'x+y+z+text',
+        },
+      ];
+      layout = {
+        scene: {
+          xaxis: { title: xLabel },
+          yaxis: { title: yLabel },
+          zaxis: { title: 'Area (m²)' },
+        },
+        autosize: true,
+        title: `Area (m²) vs ${xLabel} and ${yLabel}`,
+        margin: { l: 0, r: 0, b: 0, t: 50 },
+      };
+      break;
+
+    case 'isosurface':
+      plotData = [
+        {
+          x: xData,
+          y: adjustedYData,
+          z: zData,
+          value: zData,
+          type: 'isosurface',
+          isomin: Math.min(...zData),
+          isomax: Math.max(...zData),
+          caps: { x: { show: false }, y: { show: false } },
+          surface: { count: 5 },
+          colorscale: 'Viridis',
+          text: data.map((row) => `Test Case: ${row.testCase}`),
+          hoverinfo: 'x+y+z+text',
+        },
+      ];
+      layout = {
+        scene: {
+          xaxis: { title: xLabel },
+          yaxis: { title: yLabel },
+          zaxis: { title: 'Area (m²)' },
+        },
+        autosize: true,
+        title: `Isosurface: Area (m²) vs ${xLabel} and ${yLabel}`,
+        margin: { l: 0, r: 0, b: 0, t: 50 },
+      };
+      break;
+
+    case 'volume':
+      plotData = [
+        {
+          x: xData,
+          y: adjustedYData,
+          z: zData,
+          value: zData,
+          type: 'volume',
+          isomin: Math.min(...zData),
+          isomax: Math.max(...zData),
+          opacity: 0.1,
+          surface: { count: 5 },
+          colorscale: 'Viridis',
+          text: data.map((row) => `Test Case: ${row.testCase}`),
+          hoverinfo: 'x+y+z+text',
+        },
+      ];
+      layout = {
+        scene: {
+          xaxis: { title: xLabel },
+          yaxis: { title: yLabel },
+          zaxis: { title: 'Area (m²)' },
+        },
+        autosize: true,
+        title: `Volume: Area (m²) vs ${xLabel} and ${yLabel}`,
+        margin: { l: 0, r: 0, b: 0, t: 50 },
+      };
+      break;
+
+    default:
+      // Default to 'mesh3d'
+      plotData = [
+        {
+          x: xData,
+          y: adjustedYData,
+          z: zData,
+          type: 'mesh3d',
+          intensity: zData,
+          colorscale: 'Viridis',
+          text: data.map((row) => `Test Case: ${row.testCase}`),
+          hoverinfo: 'x+y+z+text',
+        },
+      ];
+      layout = {
+        scene: {
+          xaxis: { title: xLabel },
+          yaxis: { title: yLabel },
+          zaxis: { title: 'Area (m²)' },
+        },
+        autosize: true,
+        title: `Area (m²) vs ${xLabel} and ${yLabel}`,
+        margin: { l: 0, r: 0, b: 0, t: 50 },
+      };
+      break;
+  }
 
   // Adjusted plot styles for larger size
   const plotStyle = { width: '100%', height: '500px' }; // Increased height
@@ -50,14 +146,12 @@ const SurfacePlot = ({ data, xField, yField, xLabel, yLabel }) => {
     <div style={{ position: 'relative', marginBottom: '30px' }}>
       <button
         onClick={() => setIsModalOpen(true)}
+        className="custom-button"
         style={{
           position: 'absolute',
           top: '10px',
           right: '10px',
           zIndex: 1,
-          padding: '5px 10px',
-          fontSize: '12px',
-          cursor: 'pointer',
         }}
       >
         Full Screen

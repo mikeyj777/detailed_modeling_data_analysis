@@ -146,3 +146,36 @@
 .scroll-arrow.right {
   right: 10px;
 }
+
+/* Custom select styles */
+.custom-select-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.custom-select-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgb(15, 23, 42); /* slate-900 */
+}
+
+.custom-select {
+  border: 1px solid rgb(203, 213, 225); /* slate-300 */
+  border-radius: 6px;
+  padding: 0.5rem;
+  font-size: 14px;
+  color: rgb(15, 23, 42); /* slate-900 */
+  background-color: white;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.custom-select:hover {
+  border-color: rgb(148, 163, 184); /* slate-400 */
+}
+
+.custom-select:focus {
+  outline: none;
+  border-color: rgb(30, 41, 59); /* slate-800 */
+}

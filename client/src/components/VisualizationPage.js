@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import SurfacePlot from './SurfacePlot';
 import Papa from 'papaparse';
-import '../styles/Components.css';
+import '../styles/Components.css'; // Import the CSS file
 
 function VisualizationPage() {
   const [groupedData, setGroupedData] = useState({});
@@ -19,6 +19,9 @@ function VisualizationPage() {
 
   // Flag to indicate programmatic scrolling
   const isScrolling = useRef(false);
+
+  // State for selected plot type
+  const [plotType, setPlotType] = useState('mesh3d');
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -176,6 +179,7 @@ function VisualizationPage() {
 
     if (scrollEl && topScrollEl) {
       const { scrollLeft: sl, scrollWidth, clientWidth } = scrollEl;
+
       setCanScrollLeft(sl > 0);
       setCanScrollRight(sl + clientWidth < scrollWidth);
 
@@ -232,6 +236,24 @@ function VisualizationPage() {
         <button className="custom-button" onClick={loadDefaultData}>
           Load Default Data
         </button>
+
+        {/* Plot Type Dropdown */}
+        <div className="custom-select-container">
+          <label htmlFor="plotTypeSelect" className="custom-select-label">
+            Plot Type:
+          </label>
+          <select
+            id="plotTypeSelect"
+            value={plotType}
+            onChange={(e) => setPlotType(e.target.value)}
+            className="custom-select"
+          >
+            <option value="mesh3d">Mesh 3D</option>
+            <option value="scatter3d">Scatter 3D</option>
+            <option value="isosurface">Isosurface</option>
+            <option value="volume">Volume</option>
+          </select>
+        </div>
       </div>
 
       {/* Status Message */}
@@ -301,7 +323,11 @@ function VisualizationPage() {
             <h3>Concentration: {concPpm} ppm</h3>
             {plotConfigs.map((config, index) => (
               <div key={index} style={{ marginTop: '20px' }}>
-                <SurfacePlot data={groupedData[concPpm]} {...config} />
+                <SurfacePlot
+                  data={groupedData[concPpm]}
+                  plotType={plotType} // Pass the selected plot type
+                  {...config}
+                />
               </div>
             ))}
           </div>
@@ -312,7 +338,7 @@ function VisualizationPage() {
       <div
         onClick={scrollLeft}
         className="scroll-arrow left"
-        style={{ display: 'block'}}
+        style={{ display: 'block' }}
       >
         &#9664;
       </div>
@@ -321,7 +347,7 @@ function VisualizationPage() {
       <div
         onClick={scrollRight}
         className="scroll-arrow right"
-        style={{ display: 'block'}}
+        style={{ display: 'block' }}
       >
         &#9654;
       </div>
