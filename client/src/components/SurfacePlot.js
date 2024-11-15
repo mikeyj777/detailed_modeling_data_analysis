@@ -23,7 +23,7 @@ const SurfacePlot = ({ data, xField, yField, xLabel, yLabel }) => {
       x: xData,
       y: adjustedYData,
       z: zData,
-      type: 'mesh3d',
+      type: 'scatter3d',
       intensity: zData,
       colorscale: 'Viridis',
       text: data.map((row) => `Test Case: ${row.testCase}`),
